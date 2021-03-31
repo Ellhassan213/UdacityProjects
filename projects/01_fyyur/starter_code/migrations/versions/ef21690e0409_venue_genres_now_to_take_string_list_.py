@@ -1,8 +1,8 @@
-"""Fist migration - App config done, Models filled in with missing fields and properties
+"""Venue genres now to take string list not db.ARRAY
 
-Revision ID: 55cd2501aee9
+Revision ID: ef21690e0409
 Revises: 
-Create Date: 2021-03-30 17:12:03.805007
+Create Date: 2021-03-31 18:07:09.500283
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '55cd2501aee9'
+revision = 'ef21690e0409'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -42,7 +42,7 @@ def upgrade():
     sa.Column('image_link', sa.String(length=500), nullable=True),
     sa.Column('facebook_link', sa.String(length=120), nullable=True),
     sa.Column('website_link', sa.String(length=500), nullable=True),
-    sa.Column('genres', sa.ARRAY(sa.String()), nullable=False),
+    sa.Column('genres', sa.String(length=120), nullable=False),
     sa.Column('seeking_talent', sa.Boolean(), nullable=True),
     sa.Column('seeking_description', sa.String(), nullable=True),
     sa.PrimaryKeyConstraint('id')

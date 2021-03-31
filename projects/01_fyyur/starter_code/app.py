@@ -14,6 +14,8 @@ from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
 from models import db, Venue, Artist, Show
+import sys
+import re
 
 #----------------------------------------------------------------------------#
 # App Config.
@@ -199,13 +201,50 @@ def create_venue_form():
 def create_venue_submission():
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
+  incoming_venue_data = VenueForm(request.form)
+  error = False
 
-  # on successful db insert, flash success
-  flash('Venue ' + request.form['name'] + ' was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
-  # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-  return render_template('pages/home.html')
+  try:
+    # Modify genres data to suit database object
+    # join incoming list with elements with a "*"
+    join_delimeter = '*'
+    joined_genres_list = join_delimeter.join(incoming_venue_data.genres.data)
+    # Use regex to replace special characters with ', ' to match what we need "a, b, c"
+    special_characters = '[^A-Za-z0-9*]'
+    genres = re.sub(special_characters, '', joined_genres_list).replace(join_delimeter, ', ')
+    # Creating the Venue model from incoming form data 
+    new_venue_data = Venue(
+      name = incoming_venue_data.name.data,
+      city = incoming_venue_data.city.data,
+      state = incoming_venue_data.state.data,
+      address = incoming_venue_data.address.data,
+      phone = incoming_venue_data.phone.data,
+      image_link = incoming_venue_data.image_link.data,
+      facebook_link = incoming_venue_data.facebook_link.data,
+      website_link = incoming_venue_data.website_link.data,
+      genres = genres,
+      seeking_talent = incoming_venue_data.seeking_talent.data,
+      seeking_description = incoming_venue_data.seeking_description.data,
+    )
+    # Now add and commit Venue table to the database so that we are using real data
+    db.session.add(new_venue_data)
+    db.session.commit()
+  except:
+    # Activate error flag and roll back changes to the database
+    error = True
+    db.session.rollback()
+    print(sys.exc_info())
+  finally:
+    # Now close database session
+    db.session.close()
+  if error:
+    # TODO: on unsuccessful db insert, flash an error instead.
+    flash('An error occured. Venue ' + request.form['name'] + ' could not be listed!')
+  else:
+    # on successful db insert, flash success
+    flash('Venue ' + request.form['name'] + ' was successfully listed!')
+  
+  return redirect(url_for('index'))
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
@@ -393,12 +432,49 @@ def create_artist_submission():
   # called upon submitting the new artist listing form
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
+  incoming_artist_data = ArtistForm(request.form)
+  error = False
 
-  # on successful db insert, flash success
-  flash('Artist ' + request.form['name'] + ' was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
-  return render_template('pages/home.html')
+  try:
+    # Modify genres data to suit database object
+    # join incoming list with elements with a "*"
+    join_delimeter = '*'
+    joined_genres_list = join_delimeter.join(incoming_artist_data.genres.data)
+    # Use regex to replace special characters with ', ' to match what we need "a, b, c"
+    special_characters = '[^A-Za-z0-9*]'
+    genres = re.sub(special_characters, '', joined_genres_list).replace(join_delimeter, ', ')
+
+    # Creating new artist model to provide real data
+    new_artist_data = Artist(
+      name = incoming_artist_data.name.data,
+      city = incoming_artist_data.city.data,
+      state = incoming_artist_data.state.data,
+      phone = incoming_artist_data.phone.data,
+      genres =  genres, #incoming_artist_data.genres.data,
+      image_link = incoming_artist_data.image_link.data,
+      facebook_link = incoming_artist_data.facebook_link.data,
+      website_link = incoming_artist_data.website_link.data,
+      seeking_venue = incoming_artist_data.seeking_venue.data,
+      seeking_description = incoming_artist_data.seeking_description.data
+    )
+    # Add and commit artist table data to database
+    db.session.add(new_artist_data)
+    db.session.commit()
+  except:
+    # If there are any errors, rollback changes
+    error = True
+    db.session.rollback()
+    print(sys.exc_info())
+  finally:
+    db.session.close()
+  if error:
+    # TODO: on unsuccessful db insert, flash an error instead.
+    flash('An error occurred. Artist ' + incoming_artist_data.name.data + ' could not be listed!')
+  else:
+    # on successful db insert, flash success
+    flash('Artist ' + incoming_artist_data.name.data + ' was successfully listed!')
+
+  return redirect(url_for('index'))
 
 
 #  Shows
@@ -457,13 +533,34 @@ def create_shows():
 def create_show_submission():
   # called to create new shows in the db, upon submitting new show listing form
   # TODO: insert form data as a new Show record in the db, instead
+  incoming_show_data = ShowForm(request.form)
+  error = False
 
-  # on successful db insert, flash success
-  flash('Show was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Show could not be listed.')
-  # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-  return render_template('pages/home.html')
+  try:
+    # Creating new show model based on form input
+    new_show_data = Show(
+      venue_id = incoming_show_data.venue_id.data,
+      artist_id = incoming_show_data.artist_id.data,
+      start_time = incoming_show_data.start_time.data
+    )
+    # Adding and commiting to database
+    db.session.add(new_show_data)
+    db.session.commit()
+  except:
+    # If errors occur, roll back changes to database
+    error = True
+    db.session.rollback()
+    print(sys.exc_info())
+  finally:
+    db.session.close()
+  if error:
+    # TODO: on unsuccessful db insert, flash an error instead.
+    flash('An error occurred. Show could not be listed.')
+  else:
+    # on successful db insert, flash success
+    flash('Show was successfully listed!')
+
+  return redirect(url_for('index'))
 
 @app.errorhandler(404)
 def not_found_error(error):
