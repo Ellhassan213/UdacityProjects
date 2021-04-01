@@ -67,6 +67,26 @@ def index():
 def venues():
   # TODO: replace with real venues data.
   #       num_shows should be aggregated based on number of upcoming shows per venue.
+
+  # Group venues by city and state, filter by city and state, fetch ID and Name of the venue
+  venue_data = []
+  city_state_group = Venue.query.with_entities(Venue.city, Venue.state).group_by(
+    Venue.city, Venue.state).all()
+
+  for city, state in city_state_group:
+    venue = Venue.query.with_entities(Venue.id, Venue.name).filter_by(
+      city=city, state=state).order_by('id').all()
+    
+    # print(venue)
+    
+    venue_data.append({
+      'city': city,
+      'state': state,
+      'venues': venue,
+    })
+
+  # print(venue_data)
+
   data=[{
     "city": "San Francisco",
     "state": "CA",
@@ -88,7 +108,7 @@ def venues():
       "num_upcoming_shows": 0,
     }]
   }]
-  return render_template('pages/venues.html', areas=data)
+  return render_template('pages/venues.html', areas=venue_data)
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
@@ -260,6 +280,9 @@ def delete_venue(venue_id):
 @app.route('/artists')
 def artists():
   # TODO: replace with real data returned from querying the database
+  # Extract ALL IDs and names of of artists from the model, order by ID 
+  artist_data = Artist.query.with_entities(Artist.id, Artist.name).order_by('id').all()
+  print(artist_data)
   data=[{
     "id": 4,
     "name": "Guns N Petals",
@@ -270,7 +293,7 @@ def artists():
     "id": 6,
     "name": "The Wild Sax Band",
   }]
-  return render_template('pages/artists.html', artists=data)
+  return render_template('pages/artists.html', artists=artist_data)
 
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
@@ -485,6 +508,26 @@ def shows():
   # displays list of shows at /shows
   # TODO: replace with real venues data.
   #       num_shows should be aggregated based on number of upcoming shows per venue.
+
+  # Get all the data from show model, order them by earliest start time
+  # Use relationship built into models to extract venue and artist information
+  # This is where the backref comes into play
+  show_data = Show.query.order_by('start_time').all()
+  # print(show_data)
+  new_show_data = []
+  for show in show_data:
+    # Creating and assigning show details in the structure required
+    show.venue_id = show.venue.id
+    show.venue_name = show.venue.name
+    show.artist_id = show.artist.id
+    show.artist_name = show.artist.name
+    show.artist_image = show.artist.image_link
+    show.start_time = format_datetime(str(show.start_time))
+
+    # Append the show detail into the overall container that will list all shows
+    new_show_data.append(show)
+  # print(new_show_data)
+  
   data=[{
     "venue_id": 1,
     "venue_name": "The Musical Hop",
@@ -521,7 +564,7 @@ def shows():
     "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
     "start_time": "2035-04-15T20:00:00.000Z"
   }]
-  return render_template('pages/shows.html', shows=data)
+  return render_template('pages/shows.html', shows=new_show_data)
 
 @app.route('/shows/create')
 def create_shows():
