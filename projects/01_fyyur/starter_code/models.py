@@ -28,7 +28,7 @@ class Venue(db.Model):
     genres = db.Column(db.String(120), nullable=False)
     seeking_talent = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String())
-    shows = db.relationship('Show', backref='venue', lazy=True)
+    shows = db.relationship('Show', backref='venue', cascade='all, delete', lazy=True)
 
     def __repr__(self):
       return f'<Venue ID: {self.id}, Name: {self.name}, City: {self.city}, Phone: {self.phone}>'
@@ -52,7 +52,7 @@ class Artist(db.Model):
     website_link = db.Column(db.String(500))
     seeking_venue = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String())
-    shows = db.relationship('Show', backref='artist', lazy=True)
+    shows = db.relationship('Show', backref='artist', cascade='all, delete', lazy=True)
   
     def __repr__(self):
       return f'<Artist ID: {self.id}, Name: {self.name}, Phone: {self.phone}, Seeking: {self.seeking_venue}>'
