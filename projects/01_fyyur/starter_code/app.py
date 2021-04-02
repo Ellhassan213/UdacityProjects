@@ -706,7 +706,7 @@ def shows():
     show.venue_name = show.venue.name
     show.artist_id = show.artist.id
     show.artist_name = show.artist.name
-    show.artist_image = show.artist.image_link
+    show.artist_image_link = show.artist.image_link
     show.start_time = format_datetime(str(show.start_time))
 
     # Append the show detail into the overall container that will list all shows
