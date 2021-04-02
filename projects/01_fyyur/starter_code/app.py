@@ -492,24 +492,10 @@ def show_artist(artist_id):
 #  ----------------------------------------------------------------
 @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
 def edit_artist(artist_id):
-  # Get current data, construct the current data into dictionary form ready for update
-  artist_data = Artist.query.get(artist_id)
-  current_artist_data = {
-    'id': artist_data.id,
-    'name': artist_data.name,
-    'genres': artist_data.genres, #','.join(artist_data.genres),
-    'city': artist_data.city,
-    'state': artist_data.state,
-    'phone': artist_data.phone,
-    'website_link': artist_data.website_link,
-    'facebook_link': artist_data.facebook_link,
-    'seeking_venue': artist_data.seeking_venue,
-    'seeking_description': artist_data.seeking_description,
-    'image_link': artist_data.image_link
-  }
-  form = ArtistForm(data=current_artist_data)
 
-  print(current_artist_data['genres'])
+  artist = Artist.query.get(artist_id)
+  form = ArtistForm(obj=artist)
+  return render_template('forms/edit_artist.html', form=form, artist=artist)
 
   # artist={
   #   "id": 4,
@@ -525,77 +511,105 @@ def edit_artist(artist_id):
   #   "image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80"
   # }
   # TODO: populate form with fields from artist with ID <artist_id>
-  return render_template('forms/edit_artist.html', form=form, artist=current_artist_data)
+  # return render_template('forms/edit_artist.html', form=form, artist=current_artist_data)
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
   # TODO: take values from the form submitted, and update existing
   # artist record with ID <artist_id> using the new attributes
 
-  artist_data = Artist.query.get(artist_id)
-  incoming_artist_data = ArtistForm(request.form)
-  error = False
+  artist = Artist.query.get(artist_id)
+  form = ArtistForm(request.form)
 
   # Modify genres data to suit database object
   # join incoming list with elements with a "*"
   join_delimeter = '*'
-  joined_genres_list = join_delimeter.join(incoming_artist_data.genres.data)
+  joined_genres_list = join_delimeter.join(form.genres.data)
   # Use regex to replace special characters with ', ' to match what we need "a, b, c"
-  special_characters = '[^A-Za-z0-9*]'
+  special_characters = '[^A-Za-z0-9&*]'
   genres = re.sub(special_characters, '', joined_genres_list).replace(join_delimeter, ', ')
 
   try:
-    # Update with the new incoming data and commit
-    artist_data.name = incoming_artist_data.name.data
-    artist_data.city = incoming_artist_data.city.data
-    artist_data.state = incoming_artist_data.state.data
-    artist_data.phone = incoming_artist_data.phone.data
-    artist_data.genres = genres, #','.join(incoming_artist_data.genres.data)
-    artist_data.image_link = incoming_artist_data.image_link.data
-    artist_data.facebook_link = incoming_artist_data.facebook_link.data
-    artist_data.website_link = incoming_artist_data.website_link.data
-    artist_data.seeking_venue = incoming_artist_data.seeking_venue.data
-    artist_data.seeking_description = incoming_artist_data.seeking_description
+    artist.name = form.name.data
+    artist.city = form.city.data
+    artist.state = form.state.data
+    artist.phone = form.phone.data
+    artist.genres = genres
+    artist.image_link = form.image_link.data
+    artist.facebook_link = form.facebook_link.data
+    artist.website_link = form.website_link.data
+    artist.seeking_venue = form.seeking_venue.data
+    artist.seeking_description = form.seeking_description.data
 
     db.session.commit()
-  except:
-    # if error, rollback changes
-    error = True
+    flash(f'Artist {form.name.data} was successfully edited!')
+  except ValueError as e:
     db.session.rollback()
-    print(sys.exc_info())
+    flash(f'An error occurred in {form.name.data}. Error: {str(e)}')
   finally:
     db.session.close()
-  if error:
-    flash('Error: Artist ' + incoming_artist_data.name.data + ' could not be updated!')
-  else:
-    flash('Success: Artist ' + incoming_artist_data.name.data + ' updated!')
-
   return redirect(url_for('show_artist', artist_id=artist_id))
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
 def edit_venue(venue_id):
-  form = VenueForm()
-  venue={
-    "id": 1,
-    "name": "The Musical Hop",
-    "genres": ["Jazz", "Reggae", "Swing", "Classical", "Folk"],
-    "address": "1015 Folsom Street",
-    "city": "San Francisco",
-    "state": "CA",
-    "phone": "123-123-1234",
-    "website": "https://www.themusicalhop.com",
-    "facebook_link": "https://www.facebook.com/TheMusicalHop",
-    "seeking_talent": True,
-    "seeking_description": "We are on the lookout for a local artist to play every two weeks. Please call us.",
-    "image_link": "https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60"
-  }
-  # TODO: populate form with values from venue with ID <venue_id>
+
+  venue = Venue.query.get(venue_id)
+  form = VenueForm(obj=venue)
   return render_template('forms/edit_venue.html', form=form, venue=venue)
+
+  # form = VenueForm()
+  # venue={
+  #   "id": 1,
+  #   "name": "The Musical Hop",
+  #   "genres": ["Jazz", "Reggae", "Swing", "Classical", "Folk"],
+  #   "address": "1015 Folsom Street",
+  #   "city": "San Francisco",
+  #   "state": "CA",
+  #   "phone": "123-123-1234",
+  #   "website": "https://www.themusicalhop.com",
+  #   "facebook_link": "https://www.facebook.com/TheMusicalHop",
+  #   "seeking_talent": True,
+  #   "seeking_description": "We are on the lookout for a local artist to play every two weeks. Please call us.",
+  #   "image_link": "https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60"
+  # }
+  # # TODO: populate form with values from venue with ID <venue_id>
+  # return render_template('forms/edit_venue.html', form=form, venue=venue)
 
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
 def edit_venue_submission(venue_id):
   # TODO: take values from the form submitted, and update existing
   # venue record with ID <venue_id> using the new attributes
+
+  venue = Venue.query.get(venue_id)
+  form = VenueForm(request.form)
+
+  # Modify genres data to suit database object
+  # join incoming list with elements with a "*"
+  join_delimeter = '*'
+  joined_genres_list = join_delimeter.join(form.genres.data)
+  # Use regex to replace special characters with ', ' to match what we need "a, b, c"
+  special_characters = '[^A-Za-z0-9&*]'
+  genres = re.sub(special_characters, '', joined_genres_list).replace(join_delimeter, ', ')
+
+  try:
+    venue.name = form.name.data
+    venue.city = form.city.data
+    venue.state = form.state.data
+    venue.phone = form.phone.data
+    venue.genres = genres
+    venue.image_link = form.image_link.data
+    venue.facebook_link = form.facebook_link.data
+    venue.website_link = form.website_link.data
+    venue.seeking_talent = form.seeking_talent.data
+    venue.seeking_description = form.seeking_description.data
+
+    db.session.commit()
+    flash(f'Venue {form.name.data} was successfully edited!')
+  except ValueError as e:
+    db.session.rollback()
+    flash(f'An error occurred in {form.name.data}. Error: {str(e)}')
+  finally:
+    db.session.close()
   return redirect(url_for('show_venue', venue_id=venue_id))
 
 #  Create Artist
@@ -620,7 +634,7 @@ def create_artist_submission():
     join_delimeter = '*'
     joined_genres_list = join_delimeter.join(incoming_artist_data.genres.data)
     # Use regex to replace special characters with ', ' to match what we need "a, b, c"
-    special_characters = '[^A-Za-z0-9*]'
+    special_characters = '[^A-Za-z0-9&*]'
     genres = re.sub(special_characters, '', joined_genres_list).replace(join_delimeter, ', ')
 
     # Creating new artist model to provide real data
