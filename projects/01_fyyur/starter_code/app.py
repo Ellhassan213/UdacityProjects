@@ -487,27 +487,40 @@ def create_shows():
 def create_show_submission():
   # called to create new shows in the db, upon submitting new show listing form
   # TODO: insert form data as a new Show record in the db, instead
-  incoming_show_data = ShowForm(request.form)
+  incoming_show_data = ShowForm(request.form, csrf_enabled=False)
+  return_page = ''
 
-  try:
-    # Creating new show model based on form input
-    new_show_data = Show(
-      venue_id = incoming_show_data.venue_id.data,
-      artist_id = incoming_show_data.artist_id.data,
-      start_time = incoming_show_data.start_time.data
-    )
-    # Adding and commiting to database
-    db.session.add(new_show_data)
-    db.session.commit()
-    flash('Show was successfully listed!')
-  except ValueError as e:
-    # If errors occur, roll back changes to database
-    # TODO: on unsuccessful db insert, flash an error instead.
-    db.session.rollback()
-    flash('An error occurred. Show could not be listed.')
-  finally:
-    db.session.close()
-  return redirect(url_for('index'))
+  if incoming_show_data.validate():
+    artist_exist = Artist.query.filter(Artist.id == incoming_show_data.artist_id.data).one_or_none()
+    venue_exist = Venue.query.filter(Venue.id == incoming_show_data.venue_id.data).one_or_none()
+    if artist_exist is not None and venue_exist is not None:
+      return_page = 'index'
+      try:
+        # Creating new show model based on form input
+        new_show_data = Show(
+          venue_id = incoming_show_data.venue_id.data,
+          artist_id = incoming_show_data.artist_id.data,
+          start_time = incoming_show_data.start_time.data
+        )
+        # Adding and commiting to database
+        db.session.add(new_show_data)
+        db.session.commit()
+        flash('Show was successfully listed!')
+      except ValueError as e:
+        # If errors occur, roll back changes to database
+        # TODO: on unsuccessful db insert, flash an error instead.
+        db.session.rollback()
+        flash('An error occurred. Show could not be listed.')
+      finally:
+        db.session.close()
+    else:
+      return_page = 'create_show_submission'
+      flash('Either Artist or Venue ID does not exist... Please check the details!')
+  else:
+    return_page = 'create_show_submission'
+    form_error_handling(incoming_show_data)
+
+  return redirect(url_for(return_page))
 
 
 @app.errorhandler(404)

@@ -9,13 +9,21 @@ def validate_phone(form, field):
     match = regex.match(field.data)
     if not match:
         raise ValidationError('invalid input')
+
+def validate_ID(form, field):
+    try:
+        int(field.data)
+    except:
+        raise ValidationError('is not an integer')
         
 class ShowForm(Form):
     artist_id = StringField(
-        'artist_id'
+        'artist_id',
+        validators=[DataRequired(), validate_ID]
     )
     venue_id = StringField(
-        'venue_id'
+        'venue_id',
+        validators=[DataRequired(), validate_ID]
     )
     start_time = DateTimeField(
         'start_time',
