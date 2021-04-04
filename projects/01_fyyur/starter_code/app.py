@@ -490,6 +490,7 @@ def create_show_submission():
   incoming_show_data = ShowForm(request.form, csrf_enabled=False)
   return_page = ''
 
+  # Form must be validated before anything happens, then ensure the IDs are in database before trying to create shows
   if incoming_show_data.validate():
     artist_exist = Artist.query.filter(Artist.id == incoming_show_data.artist_id.data).one_or_none()
     venue_exist = Venue.query.filter(Venue.id == incoming_show_data.venue_id.data).one_or_none()

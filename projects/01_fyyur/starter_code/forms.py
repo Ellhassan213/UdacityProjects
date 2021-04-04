@@ -5,12 +5,14 @@ from wtforms.validators import DataRequired, AnyOf, URL, ValidationError
 import re
 
 def validate_phone(form, field):
+    # Use regex to match the date format we want
     regex = re.compile('^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$')
     match = regex.match(field.data)
     if not match:
         raise ValidationError('invalid input')
 
 def validate_ID(form, field):
+    # Try to convert inout to integer, if it errors out thenn raise a validation error
     try:
         int(field.data)
     except:
