@@ -8,45 +8,86 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
+def paginate_questions(request, selection):
+    page = request.args.get('page', 1, type=int)
+    start = (page - 1) * QUESTIONS_PER_PAGE
+    end = start + QUESTIONS_PER_PAGE
+
+    questions = [question.format() for question in selection]
+    current_questions = questions[start:end]
+
+    return current_questions
+
+
 def create_app(test_config=None):
   # create and configure the app
+  ''' @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs '''
   app = Flask(__name__)
   setup_db(app)
-  CORS(app, resources={r"*/api/*": {origins: '*'}})
+  CORS(app, resources={r"/api/*": {"origins": '*'}}) #   CORS(app, resources={r"*/api/*": {"origins": '*'}})
 
+
+  ''' @TODO: Use the after_request decorator to set Access-Control-Allow '''
   @app.after_request
   def after_request(response):
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
     response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS')
     return response
   
-  '''
-  @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
-  '''
 
-  '''
-  @TODO: Use the after_request decorator to set Access-Control-Allow
-  '''
-
-  '''
-  @TODO: 
-  Create an endpoint to handle GET requests 
-  for all available categories.
-  '''
+  @app.route('/index', methods=['GET'])
+  def index():
+    return jsonify({
+      "success": True,
+      "message": "Hey there, WELCOME to Lawal's Awesome TRIVIA Application!"
+    })
 
 
-  '''
-  @TODO: 
-  Create an endpoint to handle GET requests for questions, 
-  including pagination (every 10 questions). 
-  This endpoint should return a list of questions, 
-  number of total questions, current category, categories. 
+  ''' @TODO: Create an endpoint to handle GET requests for all available categories. '''
+  @app.route('/categories', methods=['GET'])
+  def retrieve_all_categories():
+    categories = Category.query.order_by(Category.id).all()
+    formatted_categories = {category.id: category.type for category in categories}
 
-  TEST: At this point, when you start the application
-  you should see questions and categories generated,
-  ten questions per page and pagination at the bottom of the screen for three pages.
-  Clicking on the page numbers should update the questions. 
-  '''
+    # print(formatted_categories) {1: 'Science', 2: 'Art', 3: 'Geography', 4: 'History', 5: 'Entertainment', 6: 'Sports'}
+
+    return jsonify({
+      "success": True,
+      "categories": formatted_categories,
+      'total_categories' : len(formatted_categories)
+    })
+
+    # curl http://127.0.0.1:5000/categories
+
+
+  ''' @TODO: Create an endpoint to handle GET requests for questions, including pagination (every 10 questions). 
+      This endpoint should return a list of questions, number of total questions, current category, categories. 
+
+      TEST: At this point, when you start the application you should see questions and categories generated,
+      ten questions per page and pagination at the bottom of the screen for three pages.
+      Clicking on the page numbers should update the questions. '''
+
+  @app.route('/questions', methods=['GET'])
+  def retrieve_paginated_questions():
+    selection = Question.query.order_by(Question.id).all()
+    current_questions = paginate_questions(request, selection)
+
+    categories = Category.query.order_by(Category.id).all()
+    formatted_categories = {category.id: category.type for category in categories}
+
+    if len(current_questions) == 0:
+      abort(404)
+
+    return jsonify({
+      "success": True,
+      "questions": current_questions,
+      "total_questions": len(selection),
+      "categories": formatted_categories,
+      "current_categories": None
+    })
+
+    # curl http://127.0.0.1:5000/questions
+
 
   '''
   @TODO: 
@@ -100,11 +141,17 @@ def create_app(test_config=None):
   and shown whether they were correct or not. 
   '''
 
-  '''
-  @TODO: 
-  Create error handlers for all expected errors 
-  including 404 and 422. 
-  '''
+  ''' @TODO: Create error handlers for all expected errors, including 404 and 422. '''
+
+  @app.errorhandler(404)
+  def not_found(error):
+    return jsonify({
+        'success': False,
+        'error': 404,
+        'message': 'resource not found'
+    }), 404
+
+    # curl http://127.0.0.1:5000/questions?page=999
   
   return app
 
