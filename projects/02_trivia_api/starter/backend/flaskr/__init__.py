@@ -24,7 +24,7 @@ def create_app(test_config=None):
   ''' @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs '''
   app = Flask(__name__)
   setup_db(app)
-  CORS(app, resources={r"/api/*": {"origins": '*'}}) #   CORS(app, resources={r"*/api/*": {"origins": '*'}})
+  CORS(app, resources={r"/api/*": {"origins": '*'}})
 
 
   ''' @TODO: Use the after_request decorator to set Access-Control-Allow '''
@@ -38,8 +38,8 @@ def create_app(test_config=None):
   @app.route('/index', methods=['GET'])
   def index():
     return jsonify({
-      "success": True,
-      "message": "Hey there, WELCOME to Lawal's Awesome TRIVIA Application!"
+      'success': True,
+      'message': 'Hey there, WELCOME to Lawals Awesome TRIVIA Application!'
     })
 
 
@@ -52,12 +52,10 @@ def create_app(test_config=None):
     # print(formatted_categories) {1: 'Science', 2: 'Art', 3: 'Geography', 4: 'History', 5: 'Entertainment', 6: 'Sports'}
 
     return jsonify({
-      "success": True,
-      "categories": formatted_categories,
+      'success': True,
+      'categories': formatted_categories,
       'total_categories' : len(formatted_categories)
     })
-
-    # curl http://127.0.0.1:5000/categories
 
 
   ''' @TODO: Create an endpoint to handle GET requests for questions, including pagination (every 10 questions). 
@@ -79,34 +77,73 @@ def create_app(test_config=None):
       abort(404)
 
     return jsonify({
-      "success": True,
-      "questions": current_questions,
-      "total_questions": len(selection),
-      "categories": formatted_categories,
-      "current_categories": None
+      'success': True,
+      'questions': current_questions,
+      'total_questions': len(selection),
+      'categories': formatted_categories,
+      'current_categories': None
     })
 
-    # curl http://127.0.0.1:5000/questions
 
-
-  '''
-  @TODO: 
-  Create an endpoint to DELETE question using a question ID. 
-
+  ''' @TODO: Create an endpoint to DELETE question using a question ID. 
   TEST: When you click the trash icon next to a question, the question will be removed.
-  This removal will persist in the database and when you refresh the page. 
-  '''
+  This removal will persist in the database and when you refresh the page. '''
 
-  '''
-  @TODO: 
-  Create an endpoint to POST a new question, 
-  which will require the question and answer text, 
-  category, and difficulty score.
+  @app.route('/questions/<int:question_id>', methods=['DELETE'])
+  def delete_question(question_id):
+    try:
+      question = Question.query.get_or_404(question_id)
+      question.delete()
 
-  TEST: When you submit a question on the "Add" tab, 
-  the form will clear and the question will appear at the end of the last page
-  of the questions list in the "List" tab.  
-  '''
+      selection = Question.query.order_by(Question.id).all()
+      current_questions = paginate_questions(request, selection)
+
+      return jsonify({
+        'success': True,
+        'deleted': question_id,
+        'questions': current_questions,
+        'total_questions': len(selection)
+      })
+    except:
+      abort(422)
+
+  ''' @TODO: Create an endpoint to POST a new question, which will require the question and 
+  answer text, category, and difficulty score.
+  
+  TEST: When you submit a question on the "Add" tab, the form will clear and the question will appear at the end of the last page
+  of the questions list in the "List" tab.  '''
+
+  @app.route('/questions', methods=['POST'])
+  def create_question():
+    body = request.get_json()
+    
+    new_question = body.get('question', None)
+    new_answer = body.get('answer', None)
+    new_category = body.get('category', None)
+    new_difficulty = body.get('difficulty', None)
+
+    try:
+      question = Question(
+        question=new_question,
+        answer=new_answer,
+        category=new_category,
+        difficulty=new_difficulty
+      )
+
+      question.insert()
+
+      selection = Question.query.order_by(Question.id).all()
+      current_questions = paginate_questions(request, selection)
+
+      return jsonify({
+        'success': True,
+        'created': question.id,
+        'questions': current_questions,
+        'total_questions': len(selection)
+      })
+    except:
+      abort(422)
+
 
   '''
   @TODO: 
@@ -151,7 +188,26 @@ def create_app(test_config=None):
         'message': 'resource not found'
     }), 404
 
-    # curl http://127.0.0.1:5000/questions?page=999
+  @app.errorhandler(422)
+  def not_found(error):
+    return jsonify({
+        'success': False,
+        'error': 422,
+        'message': 'unprocessable'
+    }), 422
+
+  @app.errorhandler(405)
+  def unprocessable(error):
+      return jsonify({
+          'success': False,
+          'error': 405,
+          'message': 'method not allowed'
+      }), 405
+
+  # curl http://127.0.0.1:5000/categories
+  # curl http://127.0.0.1:5000/questions
+  # curl http://127.0.0.1:5000/questions?page=999
+  # curl -X "DELETE" http://127.0.0.1:5000/questions?page=999
   
   return app
 
