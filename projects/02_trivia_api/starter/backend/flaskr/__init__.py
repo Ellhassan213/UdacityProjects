@@ -35,14 +35,6 @@ def create_app(test_config=None):
     return response
   
 
-  @app.route('/index', methods=['GET'])
-  def index():
-    return jsonify({
-      'success': True,
-      'message': 'Hey there, WELCOME to Lawals Awesome TRIVIA Application!'
-    })
-
-
   ''' @TODO: Create an endpoint to handle GET requests for all available categories. '''
   @app.route('/categories', methods=['GET'])
   def retrieve_all_categories():
@@ -151,29 +143,81 @@ def create_app(test_config=None):
   TEST: Search by any phrase. The questions list will update to include only question that include that string within their question. 
   Try using the word "title" to start. '''
 
-  # @app.route('/questions')
+  @app.route('/questions/search', methods=['POST'])
+  def search_questions():
+    body = request.get_json()
+    search_term = body.get('searchTerm', None)
 
-  '''
-  @TODO: 
-  Create a GET endpoint to get questions based on category. 
+    search_results = Question.query.filter(Question.question.ilike(f'%{search_term}%')).all()
+    
+    if search_results is None:
+      abort(404)
+    
+    formatted_search_results = [result.format() for result in search_results]
 
-  TEST: In the "List" tab / main screen, clicking on one of the 
-  categories in the left column will cause only questions of that 
-  category to be shown. 
-  '''
+    return jsonify({
+      'success': True,
+      'questions': formatted_search_results,
+      'total_questions': len(formatted_search_results)
+    })
+
+  ''' @TODO: Create a GET endpoint to get questions based on category.
+
+  TEST: In the "List" tab / main screen, clicking on one of the categories in the left column will cause only questions of that 
+  category to be shown. '''
+
+  @app.route('/categories/<int:category_id>/questions', methods=['GET'])
+  def retrieve_questions_by_category(category_id):
+    try:
+      selected_category = Category.query.get_or_404(category_id)
+      category_questions = Question.query.filter(Question.category == category_id).order_by(Question.id).all()
+      current_questions = paginate_questions(request, category_questions)
+
+      return jsonify({
+        'success': True,
+        'questions': current_questions,
+        'total_questions': len(category_questions),
+        'current_category': selected_category.format()
+      })
+    except:
+      abort(404)
 
 
-  '''
-  @TODO: 
-  Create a POST endpoint to get questions to play the quiz. 
-  This endpoint should take category and previous question parameters 
-  and return a random questions within the given category, 
-  if provided, and that is not one of the previous questions. 
+  ''' @TODO: Create a POST endpoint to get questions to play the quiz. This endpoint should take category and previous question parameters 
+  and return a random questions within the given category, if provided, and that is not one of the previous questions. 
 
-  TEST: In the "Play" tab, after a user selects "All" or a category,
-  one question at a time is displayed, the user is allowed to answer
-  and shown whether they were correct or not. 
-  '''
+  TEST: In the "Play" tab, after a user selects "All" or a category, one question at a time is displayed, the user is allowed to answer
+  and shown whether they were correct or not. '''
+
+  @app.route('/quizzes', methods=['POST'])
+  def play_quiz():
+    try:
+      body = request.get_json()
+
+      previous_questions = body.get('previous_questions', None)
+      quiz_category = body.get('quiz_category', None)
+
+      if quiz_category['id'] == 0:
+        selected_questions = Question.query.filter(Question.id.notin_(previous_questions)).all()
+      else:
+        selected_questions = Question.query.filter(Question.category == quiz_category['id'], \
+                                                    Question.id.notin_(previous_questions)).all()
+
+      questions = [question.format() for question in selected_questions]
+
+      if selected_questions:
+        random_selector = random.randint(0, len(selected_questions)-1)
+        new_question = questions[random_selector]
+      else:
+        new_question = None
+
+      return jsonify({
+        'success': True,
+        'question': new_question
+      })
+    except:
+      abort(422)
+
 
   ''' @TODO: Create error handlers for all expected errors, including 404 and 422. '''
 
