@@ -145,16 +145,13 @@ def create_app(test_config=None):
       abort(422)
 
 
-  '''
-  @TODO: 
-  Create a POST endpoint to get questions based on a search term. 
-  It should return any questions for whom the search term 
+  ''' @TODO: Create a POST endpoint to get questions based on a search term. It should return any questions for whom the search term 
   is a substring of the question. 
 
-  TEST: Search by any phrase. The questions list will update to include 
-  only question that include that string within their question. 
-  Try using the word "title" to start. 
-  '''
+  TEST: Search by any phrase. The questions list will update to include only question that include that string within their question. 
+  Try using the word "title" to start. '''
+
+  # @app.route('/questions')
 
   '''
   @TODO: 
@@ -203,6 +200,14 @@ def create_app(test_config=None):
           'error': 405,
           'message': 'method not allowed'
       }), 405
+
+  @app.errorhandler(400)
+  def unprocessable(error):
+      return jsonify({
+          'success': False,
+          'error': 400,
+          'message': 'bad request'
+      }), 400
 
   # curl http://127.0.0.1:5000/categories
   # curl http://127.0.0.1:5000/questions

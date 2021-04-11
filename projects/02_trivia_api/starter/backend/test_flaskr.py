@@ -63,7 +63,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['categories'])
 
     # Test unsuccessful retrieval of non-existing question page
-    def test_404_retrieve_paginated_questions(self):
+    def test_404_retrieve_paginated_questions_page_not_found(self):
         res = self.client().get('/questions?page=999')
         data = json.loads(res.data)
 
@@ -106,7 +106,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(len(data['questions']))
 
     # Test unsuccessful creation of question where method is not allowed
-    def test_405_create_question(self):
+    def test_405_create_question_method_not_allowed(self):
         res = self.client().post('/questions/1', json=self.new_question)
         data = json.loads(res.data)
 
