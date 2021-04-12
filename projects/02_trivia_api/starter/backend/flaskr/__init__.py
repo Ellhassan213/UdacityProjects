@@ -8,6 +8,7 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
+# Paginate questions and organise into desired format
 def paginate_questions(request, selection):
     page = request.args.get('page', 1, type=int)
     start = (page - 1) * QUESTIONS_PER_PAGE
@@ -38,7 +39,13 @@ def create_app(test_config=None):
   ''' @TODO: Create an endpoint to handle GET requests for all available categories. '''
   @app.route('/categories', methods=['GET'])
   def retrieve_all_categories():
+
+    # Get all categories, if none found, abort 404, else format and return json object
     categories = Category.query.order_by(Category.id).all()
+
+    if not categories:
+      abort(404)
+
     formatted_categories = {category.id: category.type for category in categories}
 
     # print(formatted_categories) {1: 'Science', 2: 'Art', 3: 'Geography', 4: 'History', 5: 'Entertainment', 6: 'Sports'}
@@ -59,20 +66,23 @@ def create_app(test_config=None):
 
   @app.route('/questions', methods=['GET'])
   def retrieve_paginated_questions():
+
+    # Get and paginate questions, get categories
     selection = Question.query.order_by(Question.id).all()
     current_questions = paginate_questions(request, selection)
 
     categories = Category.query.order_by(Category.id).all()
-    formatted_categories = {category.id: category.type for category in categories}
 
-    if len(current_questions) == 0:
+    # Abort 404 if no questions or no categories
+    if len(current_questions) == 0 or not categories:
       abort(404)
 
+    #  return intented json object
     return jsonify({
       'success': True,
       'questions': current_questions,
       'total_questions': len(selection),
-      'categories': formatted_categories,
+      'categories': {category.id: category.type for category in categories},
       'current_categories': None
     })
 
@@ -84,9 +94,10 @@ def create_app(test_config=None):
   @app.route('/questions/<int:question_id>', methods=['DELETE'])
   def delete_question(question_id):
     try:
-      question = Question.query.get_or_404(question_id)
-      question.delete()
+      question = Question.query.get_or_404(question_id) # Get question by id, if it does not exist 404 abort.
+      question.delete()                                 # If it exist, delete
 
+      # Repaginate and display questions
       selection = Question.query.order_by(Question.id).all()
       current_questions = paginate_questions(request, selection)
 
@@ -107,6 +118,8 @@ def create_app(test_config=None):
 
   @app.route('/questions', methods=['POST'])
   def create_question():
+
+    # Get inputs from the form
     body = request.get_json()
     
     new_question = body.get('question', None)
@@ -115,6 +128,7 @@ def create_app(test_config=None):
     new_difficulty = body.get('difficulty', None)
 
     try:
+      # Create a new question and insert to database
       question = Question(
         question=new_question,
         answer=new_answer,
@@ -124,6 +138,7 @@ def create_app(test_config=None):
 
       question.insert()
 
+      # repaginate and display questions
       selection = Question.query.order_by(Question.id).all()
       current_questions = paginate_questions(request, selection)
 
@@ -145,9 +160,11 @@ def create_app(test_config=None):
 
   @app.route('/questions/search', methods=['POST'])
   def search_questions():
+    # Get search term from form
     body = request.get_json()
     search_term = body.get('searchTerm', None)
 
+    # search using the ilike to ensure case insensitivity
     search_results = Question.query.filter(Question.question.ilike(f'%{search_term}%')).all()
     
     if search_results is None:
@@ -169,10 +186,12 @@ def create_app(test_config=None):
   @app.route('/categories/<int:category_id>/questions', methods=['GET'])
   def retrieve_questions_by_category(category_id):
     try:
+      # Get category basedon incoming id, filter questions based on that category
       selected_category = Category.query.get_or_404(category_id)
       category_questions = Question.query.filter(Question.category == category_id).order_by(Question.id).all()
       current_questions = paginate_questions(request, category_questions)
 
+      # Return intended json object
       return jsonify({
         'success': True,
         'questions': current_questions,
@@ -192,25 +211,29 @@ def create_app(test_config=None):
   @app.route('/quizzes', methods=['POST'])
   def play_quiz():
     try:
+      # Get the incoming input, previous questions and quiz category chosen
       body = request.get_json()
 
       previous_questions = body.get('previous_questions', None)
       quiz_category = body.get('quiz_category', None)
 
-      if quiz_category['id'] == 0:
+      if quiz_category['id'] == 0: # Category id 0 - Select all questions that are not in previous questions!
         selected_questions = Question.query.filter(Question.id.notin_(previous_questions)).all()
-      else:
+      else: # Select questions by category, make sure not in previous questions
         selected_questions = Question.query.filter(Question.category == quiz_category['id'], \
                                                     Question.id.notin_(previous_questions)).all()
 
+      # Format questions
       questions = [question.format() for question in selected_questions]
 
+      # Choose a random question out of the ones selected
       if selected_questions:
         random_selector = random.randint(0, len(selected_questions)-1)
         new_question = questions[random_selector]
       else:
         new_question = None
 
+      # Return question
       return jsonify({
         'success': True,
         'question': new_question
@@ -221,6 +244,7 @@ def create_app(test_config=None):
 
   ''' @TODO: Create error handlers for all expected errors, including 404 and 422. '''
 
+  # Create all error handlers, pass in the error codes and return appropriate errors and messages
   @app.errorhandler(404)
   def not_found(error):
     return jsonify({
