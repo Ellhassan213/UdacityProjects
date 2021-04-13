@@ -1,4 +1,5 @@
 # Full Stack API Final Project
+Trivia but not Trivial (^^)
 
 ## Full Stack Trivia
 
