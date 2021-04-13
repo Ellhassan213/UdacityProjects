@@ -372,7 +372,37 @@ curl -X POST -H "Content-Type: application/json" -d '{"previous_questions": [], 
 }
 ```
 
-## Tasks Completed 
+## Testing
+
+#### General
+Each endpoint is tested for successful and unsuccessful execution. Expected outputs are used for validation
+See tests below:
+- test_retrieve_all_categories: Test successful retrieval of all categories
+- test_retrieve_paginated_questions: Test successful retrieval of paginated questions
+- test_404_retrieve_paginated_questions_page_not_found: Test unsuccessful retrieval of non-existing question page
+- test_delete_question: Test successful deletion of a question
+- test_422_delete_question: Test unsuccessful deletion of a question that does not exist
+- test_create_question: Test successful creation of a question
+- test_405_create_question_method_not_allowed: Test unsuccessful creation of question where method is not allowed
+- test_search_questions: Test successful search of questions - search term found
+- test_search_questions_search_term_not_found: Test unsuccessful search of questions - Search term not found
+- test_retrieve_questions_by_category: Test successful retrieval of questions by category
+- test_404_retrieve_questions_by_category_not_found: Test unsuccessful retrieval of questions where category does not exist
+- test_quizzes: Test successful quiz - Question retrieved
+- test_422_test_quizzes_no_data: Test unsuccessful quiz - no data
+
+#### Test Execution
+To run the tests, run
+```
+dropdb trivia_test
+createdb trivia_test
+psql trivia_test < trivia.psql
+python test_flaskr.py
+```
+
+## Deployment - N/A
+
+## Tasks (Completed)
 
 One note before you delve into your tasks: for each endpoint you are expected to define the endpoint and response data. The frontend will be a plentiful resource because it is set up to expect certain endpoints and response data formats already. You should feel free to specify endpoints in your own way; if you do so, make sure to update the frontend or you will get some unexpected behavior. 
 
@@ -385,13 +415,4 @@ One note before you delve into your tasks: for each endpoint you are expected to
 7. Create a POST endpoint to get questions based on a search term. It should return any questions for whom the search term is a substring of the question. 
 8. Create a POST endpoint to get questions to play the quiz. This endpoint should take category and previous question parameters and return a random questions within the given category, if provided, and that is not one of the previous questions. 
 9. Create error handlers for all expected errors including 400, 404, 422 and 500. 
-
-
-## Testing
-To run the tests, run
-```
-dropdb trivia_test
-createdb trivia_test
-psql trivia_test < trivia.psql
-python test_flaskr.py
-```
+10. Create Unit tests for successful and unsuccessful execution of all endpoints functionality
