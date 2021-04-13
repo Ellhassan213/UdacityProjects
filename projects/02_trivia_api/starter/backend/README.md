@@ -52,6 +52,72 @@ Setting the `FLASK_ENV` variable to `development` will detect file changes and r
 
 Setting the `FLASK_APP` variable to `flaskr` directs flask to use the `flaskr` directory and the `__init__.py` file to find the application. 
 
+#### Base URL
+
+The app is currently run locally and is not hosted as a base URL.
+The backend app is hosted at default http://127.0.0.1:5000/, which is set as a proxy in the frontend configuration.
+
+#### API Keys/Authentication
+
+This version of the app does not require authentication or API keys.
+
+## Error Handling
+
+Errors are returned as JSON objects in the following format:
+{
+    "success": False,
+    "error": 400,
+    "message": "bad request"
+}
+
+The app will return the following error types when request fail:
+
+- 400: Bad request
+- 404: Resource not found
+- 422: Unprocessable
+- 405: Method not allowed
+- 500: Internal server error
+
+## Resource Endpoints
+
+### GET /categories
+
+#### General
+- Returns a dictionary of all category topics, success value and total number of categories
+
+#### Sample Request
+
+```bash
+curl http://127.0.0.1:5000/categories
+```
+
+#### Sample Response
+
+```bash
+{
+  "categories": {
+    "1": "Science", 
+    "2": "Art", 
+    "3": "Geography", 
+    "4": "History", 
+    "5": "Entertainment", 
+    "6": "Sports"
+  }, 
+  "success": true, 
+  "total_categories": 6
+}
+```
+
+### GET /questions
+
+#### General
+- Results are paginated in groups of 10
+- It is possible to include a request argument to choose page number. Start from 1!
+
+#### Sample Request
+
+#### Sample Response
+
 ## Tasks
 
 One note before you delve into your tasks: for each endpoint you are expected to define the endpoint and response data. The frontend will be a plentiful resource because it is set up to expect certain endpoints and response data formats already. You should feel free to specify endpoints in your own way; if you do so, make sure to update the frontend or you will get some unexpected behavior. 
