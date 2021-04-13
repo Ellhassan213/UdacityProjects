@@ -254,7 +254,7 @@ def create_app(test_config=None):
     }), 404
 
   @app.errorhandler(422)
-  def not_found(error):
+  def unprocessable(error):
     return jsonify({
         'success': False,
         'error': 422,
@@ -262,7 +262,7 @@ def create_app(test_config=None):
     }), 422
 
   @app.errorhandler(405)
-  def unprocessable(error):
+  def not_allowed(error):
       return jsonify({
           'success': False,
           'error': 405,
@@ -270,17 +270,20 @@ def create_app(test_config=None):
       }), 405
 
   @app.errorhandler(400)
-  def unprocessable(error):
+  def bad_request(error):
       return jsonify({
           'success': False,
           'error': 400,
           'message': 'bad request'
       }), 400
 
-  # curl http://127.0.0.1:5000/categories
-  # curl http://127.0.0.1:5000/questions
-  # curl http://127.0.0.1:5000/questions?page=999
-  # curl -X "DELETE" http://127.0.0.1:5000/questions?page=999
+  @app.errorhandler(500)
+  def server_error(error):
+      return jsonify({
+          'success': False,
+          'error': 500,
+          'message': 'internal server error'
+      }), 500
   
   return app
 
