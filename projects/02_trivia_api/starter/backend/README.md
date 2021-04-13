@@ -64,11 +64,13 @@ This version of the app does not require authentication or API keys.
 ## Error Handling
 
 Errors are returned as JSON objects in the following format:
+```bash
 {
     "success": False,
     "error": 400,
     "message": "bad request"
 }
+```
 
 The app will return the following error types when request fail:
 
