@@ -113,12 +113,162 @@ curl http://127.0.0.1:5000/categories
 ### GET /questions
 
 #### General
+- Returns a dictionary of list of questions, success value, total number of questions and categories
 - Results are paginated in groups of 10
 - It is possible to include a request argument to choose page number. Start from 1!
 
 #### Sample Request
 
+```bash
+curl http://127.0.0.1:5000/questions?page=1
+```
+
 #### Sample Response
+
+```bash
+{
+  "categories": {
+    "1": "Science", 
+    "2": "Art", 
+    "3": "Geography", 
+    "4": "History", 
+    "5": "Entertainment", 
+    "6": "Sports"
+  }, 
+  "current_categories": null, 
+  "questions": [
+    {
+      "answer": "Apollo 13", 
+      "category": 5, 
+      "difficulty": 4, 
+      "id": 2, 
+      "question": "What movie earned Tom Hanks his third straight Oscar nomination, in 1996?"
+    }, 
+    {
+      "answer": "George Washington Carver", 
+      "category": 4, 
+      "difficulty": 2, 
+      "id": 12, 
+      "question": "Who invented Peanut Butter?"
+    }, 
+    {
+      "answer": "The Palace of Versailles", 
+      "category": 3, 
+      "difficulty": 3, 
+      "id": 14, 
+      "question": "In which royal palace would you find the Hall of Mirrors?"
+    }
+  ], 
+  "success": true, 
+  "total_questions": 3
+}
+```
+### DELETE /questions/{question_id}
+
+#### General
+- Deletes the record of a question
+- Returns ID of deleted question, success value, current paginated questions and total number of questions left
+
+#### Sample Request
+
+```bash
+curl -X DELETE http://127.0.0.1:5000/questions/4
+```
+
+#### Sample Response
+
+```bash
+{
+  "deleted": 4, 
+  "questions": [
+    {
+      "answer": "Apollo 13", 
+      "category": 5, 
+      "difficulty": 4, 
+      "id": 2, 
+      "question": "What movie earned Tom Hanks his third straight Oscar nomination, in 1996?"
+    }, 
+    {
+      "answer": "Muhammad Ali", 
+      "category": 4, 
+      "difficulty": 1, 
+      "id": 9, 
+      "question": "What boxer's original name is Cassius Clay?"
+    },  
+    {
+      "answer": "Agra", 
+      "category": 3, 
+      "difficulty": 2, 
+      "id": 15, 
+      "question": "The Taj Mahal is located in which Indian city?"
+    }
+  ], 
+  "success": true, 
+  "total_questions": 3
+}
+```
+
+### POST /questions
+
+#### General
+- Creates a new question record
+- Returns ID of created question, success value, current paginated questions and total number of questions
+
+#### Sample Request
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"question": "Sample Question", "answer": "Sample Answer", "category": 3, "difficulty": 3}' http://127.0.0.1:5000/questions 
+```
+
+#### Sample Response
+
+```bash
+{
+  "created": 30, 
+  "questions": [
+    {
+      "answer": "Apollo 13", 
+      "category": 5, 
+      "difficulty": 4, 
+      "id": 2, 
+      "question": "What movie earned Tom Hanks his third straight Oscar nomination, in 1996?"
+    }, 
+    {
+      "answer": "Maya Angelou", 
+      "category": 4, 
+      "difficulty": 2, 
+      "id": 5, 
+      "question": "Whose autobiography is entitled 'I Know Why the Caged Bird Sings'?"
+    }, 
+    {
+      "answer": "Agra", 
+      "category": 3, 
+      "difficulty": 2, 
+      "id": 15, 
+      "question": "The Taj Mahal is located in which Indian city?"
+    }
+  ], 
+  "success": true, 
+  "total_questions": 20
+}
+```
+
+### POST /search
+
+#### General
+- xxxx
+
+#### Sample Request
+
+```bash
+curl 
+```
+
+#### Sample Response
+
+```bash
+
+```
 
 ## Tasks
 
