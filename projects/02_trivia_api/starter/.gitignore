@@ -11,3 +11,11 @@ venv
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+env
+*.pyc
+frontend/node_modules
+package-lock.json
+frontend/package-lock.json
+*package.json
+*.json
