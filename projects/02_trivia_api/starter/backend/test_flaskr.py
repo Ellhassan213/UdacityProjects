@@ -2,9 +2,12 @@ import os
 import unittest
 import json
 from flask_sqlalchemy import SQLAlchemy
+from dotenv import load_dotenv
 
 from flaskr import create_app
 from models import setup_db, Question, Category
+
+load_dotenv()
 
 
 class TriviaTestCase(unittest.TestCase):
@@ -14,8 +17,9 @@ class TriviaTestCase(unittest.TestCase):
         """Define test variables and initialize app."""
         self.app = create_app()
         self.client = self.app.test_client
-        self.database_name = "trivia_test"
-        self.database_path = "postgres://{}/{}".format('localhost:5432', self.database_name)
+        self.database_name = os.environ.get("DB_NAME_TEST")
+        self.database_path = "postgresql+psycopg2://{}/{}".format(
+                                os.environ.get("DB_HOST"), self.database_name)
         setup_db(self.app, self.database_path)
 
         self.new_question = {
@@ -31,15 +35,10 @@ class TriviaTestCase(unittest.TestCase):
             self.db.init_app(self.app)
             # create all tables
             self.db.create_all()
-    
+
     def tearDown(self):
         """Executed after reach test"""
         pass
-
-    """
-    TODO
-    Write at least one test for each test for successful operation and for expected errors.
-    """
 
     # Test successful retrieval of all categories
     def test_retrieve_all_categories(self):
@@ -87,13 +86,13 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['deleted'], create_id)
 
     # Test unsuccessful deletion of a question that does not exist
-    def test_422_delete_question(self):
+    def test_404_delete_question(self):
         res = self.client().delete('/questions/999')
         data = json.loads(res.data)
 
-        self.assertEqual(res.status_code, 422)
+        self.assertEqual(res.status_code, 404)
         self.assertEqual(data['success'], False)
-        self.assertEqual(data['message'], 'unprocessable')
+        self.assertEqual(data['message'], 'resource not found')
 
     # Test successful creation of a question
     def test_create_question(self):
@@ -116,7 +115,8 @@ class TriviaTestCase(unittest.TestCase):
 
     # Test successful search of questions - search term found
     def test_search_questions(self):
-        res = self.client().post('/questions/search', json={'searchTerm': "title"})
+        res = self.client().post('/questions/search',
+                                 json={'searchTerm': "title"})
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
@@ -126,7 +126,8 @@ class TriviaTestCase(unittest.TestCase):
 
     # Test unsuccessful search of questions - Search term not found
     def test_search_questions_search_term_not_found(self):
-        res = self.client().post('/questions/search', json={'searchTerm': "abracadabra"})
+        res = self.client().post('/questions/search',
+                                 json={'searchTerm': "abracadabra"})
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
@@ -156,7 +157,7 @@ class TriviaTestCase(unittest.TestCase):
 
     # Test successful quiz
     def test_quizzes(self):
-        res = self.client().post('/quizzes', json = {
+        res = self.client().post('/quizzes', json={
             'previous_questions': [],
             'quiz_category': {'type': 'science', 'id': 1}
             })
@@ -166,14 +167,15 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
         self.assertIsNotNone(data['question'])
 
-    # Test unsuccessful quiz - no data
-    def test_422_test_quizzes_no_data(self):
+    # Test unsuccessful quiz - no data - Server fails
+    def test_500_test_quizzes_no_data(self):
         res = self.client().post('/quizzes')
         data = json.loads(res.data)
 
-        self.assertEqual(res.status_code, 422)
+        self.assertEqual(res.status_code, 500)
         self.assertEqual(data['success'], False)
-        self.assertEqual(data['message'], 'unprocessable')
+        self.assertEqual(data['message'], 'internal server error')
+
 
 # Make the tests conveniently executable
 if __name__ == "__main__":

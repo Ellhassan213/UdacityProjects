@@ -381,7 +381,7 @@ See tests below:
 - test_retrieve_paginated_questions: Test successful retrieval of paginated questions
 - test_404_retrieve_paginated_questions_page_not_found: Test unsuccessful retrieval of non-existing question page
 - test_delete_question: Test successful deletion of a question
-- test_422_delete_question: Test unsuccessful deletion of a question that does not exist
+- test_404_delete_question: Test unsuccessful deletion of a question that does not exist
 - test_create_question: Test successful creation of a question
 - test_405_create_question_method_not_allowed: Test unsuccessful creation of question where method is not allowed
 - test_search_questions: Test successful search of questions - search term found
@@ -389,7 +389,7 @@ See tests below:
 - test_retrieve_questions_by_category: Test successful retrieval of questions by category
 - test_404_retrieve_questions_by_category_not_found: Test unsuccessful retrieval of questions where category does not exist
 - test_quizzes: Test successful quiz - Question retrieved
-- test_422_test_quizzes_no_data: Test unsuccessful quiz - no data
+- test_500_test_quizzes_no_data: Test unsuccessful quiz - no data - Server Fails
 
 #### Test Execution
 To run the tests, run

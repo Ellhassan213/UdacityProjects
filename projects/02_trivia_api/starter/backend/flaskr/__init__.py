@@ -11,12 +11,15 @@ QUESTIONS_PER_PAGE = 10
 
 # Paginate questions and organise into desired format
 def paginate_questions(request, selection):
-    page = request.args.get('page', 1, type=int)
-    start = (page - 1) * QUESTIONS_PER_PAGE
-    end = start + QUESTIONS_PER_PAGE
+    items_limit = request.args.get('limit', QUESTIONS_PER_PAGE, type=int)
+    selected_page = request.args.get('page', 1, type=int)
+    current_index = selected_page - 1
 
-    questions = [question.format() for question in selection]
-    current_questions = questions[start:end]
+    questions = Question.query.order_by(Question.id
+                                        ).limit(items_limit).offset(
+                                          current_index * items_limit).all()
+
+    current_questions = [question.format() for question in questions]
 
     return current_questions
 
@@ -92,7 +95,8 @@ def create_app(test_config=None):
               'questions': current_questions,
               'total_questions': len(selection)
             })
-        except:
+        except ValueError as e:
+            print(f'Error: {str(e)}')
             abort(422)
 
     @app.route('/questions', methods=['POST'])
@@ -126,7 +130,8 @@ def create_app(test_config=None):
                 'questions': current_questions,
                 'total_questions': len(selection)
             })
-        except:
+        except ValueError as e:
+            print(f'Error: {str(e)}')
             abort(422)
 
     @app.route('/questions/search', methods=['POST'])
@@ -167,7 +172,8 @@ def create_app(test_config=None):
                 'total_questions': len(category_questions),
                 'current_category': selected_category.format()
             })
-        except:
+        except ValueError as e:
+            print(f'Error: {str(e)}')
             abort(404)
 
     @app.route('/quizzes', methods=['POST'])
@@ -204,7 +210,8 @@ def create_app(test_config=None):
                 'success': True,
                 'question': new_question
             })
-        except:
+        except ValueError as e:
+            print(f'Error: {str(e)}')
             abort(422)
 
     # Create all error handlers, pass in the error codes
