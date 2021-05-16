@@ -35,6 +35,7 @@ class AuthError(Exception):
 
 
 def get_token_auth_header():
+    # Get auth from header, raise error if not found
     auth = request.headers.get('Authorization', None)
     if not auth:
         raise AuthError({
@@ -42,10 +43,11 @@ def get_token_auth_header():
             "description": "Authorization header is not found"
         }, 401)
 
-    # Splitting header
+    # Splitt header to get bearer prefix and token
     parts = auth.split()
     bearer_prefix = parts[0]
 
+    # Interrogate bearer prefix
     if not bearer_prefix:
         raise AuthError({
             "code": "invalid_header",
@@ -81,12 +83,14 @@ def get_token_auth_header():
 
 
 def check_permissions(permission, payload):
+    # Make sure permissions are in the payload
     if "permissions" not in payload:
         raise AuthError({
             "code": "bad_request",
             "description": "Permissions not included in token"
         }, 400)
 
+    # Make sure the right permission exists
     if permission not in payload["permissions"]:
         raise AuthError({
             "code": "forbidden",

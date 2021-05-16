@@ -29,14 +29,16 @@ db_drop_and_create_all()
         or appropriate status code indicating reason for failure
 '''
 
+
 @app.route('/drinks', methods=['GET'])
 def get_drinks():
     try:
-        drinks = Drink.query.order_by(Drink.id).all()
+        # Get all drinks, format into short form and return as json object
+        drinks = Drink.query.all()
         drinks_short = [drink.short() for drink in drinks]
         if len(drinks_short) == 0:
             abort(404)
-        
+
         return jsonify({
             "success": True,
             "drinks": drinks_short
@@ -44,6 +46,7 @@ def get_drinks():
     except ValueError as e:
         print(f'Error: {str(e)}')
         abort(422)
+
 
 '''
 @TODO implement endpoint
@@ -54,15 +57,17 @@ def get_drinks():
         or appropriate status code indicating reason for failure
 '''
 
+
 @app.route('/drinks-detail', methods=['GET'])
 @requires_auth('get:drinks-detail')
 def get_drinks_detail(jwt):
     try:
+        # Get all drinks, format into long form and return as json object
         drinks = Drink.query.order_by(Drink.id).all()
         drinks_long = [drink.long() for drink in drinks]
         if len(drinks_long) == 0:
             abort(404)
-        
+
         return jsonify({
             "success": True,
             "drinks": drinks_long
@@ -82,10 +87,13 @@ def get_drinks_detail(jwt):
         or appropriate status code indicating reason for failure
 '''
 
+
 @app.route('/drinks', methods=['POST'])
 @requires_auth("post:drinks")
-def post_drink(payload):
+def post_drink(token):
     try:
+        # Get new drink data, create and insert new drink in database
+        # Format into long form and return as json object
         data = request.get_json()
         if not ('title' in data and 'recipe' in data):
             abort(400)
@@ -119,6 +127,29 @@ def post_drink(payload):
 '''
 
 
+@app.route('/drinks/<id>', methods=['PATCH'])
+@requires_auth('patch:drinks')
+def patch_drink(token, id):
+    try:
+        # Get updated drink data, create and update changes in database
+        # Format into long form and return as json object
+        drink = Drink.query.get_or_404(id)
+        data = request.get_json()
+
+        drink.title = data["title"]
+        drink.recipe = json.dumps(data["recipe"])
+
+        drink.update()
+
+        return jsonify({
+            "success": True,
+            "drinks": [drink.long()]
+        })
+    except ValueError as e:
+        print(f'Error: {str(e)}')
+        abort(422)
+
+
 '''
 @TODO implement endpoint
     DELETE /drinks/<id>
@@ -129,6 +160,23 @@ def post_drink(payload):
     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
         or appropriate status code indicating reason for failure
 '''
+
+
+@app.route('/drinks/<id>', methods=['DELETE'])
+@requires_auth('delete:drinks')
+def delete_drink(token, id):
+    try:
+        # Get drink using incoming id, delete item from database
+        drink = Drink.query.get_or_404(id)
+        drink.delete()
+
+        return jsonify({
+            "success": True,
+            "delete": id
+        })
+    except ValueError as e:
+        print(f'Error: {str(e)}')
+        abort(422)
 
 
 # Error Handling
@@ -162,23 +210,26 @@ def unprocessable(error):
     error handler should conform to general task above
 '''
 
+
 @app.errorhandler(404)
 def unprocessable(error):
     return jsonify({
         "success": False,
         "error": 404,
-        "message": "Not Found"
+        "message": "resource not found"
     }), 404
+
 
 '''
 @TODO implement error handler for AuthError
     error handler should conform to general task above
 '''
 
+
 @app.errorhandler(AuthError)
-def authentification_failed(AuthError):
+def auth_error(AuthError):
     return jsonify({
         "success": False,
         "error": AuthError.status_code,
-        "message": get_error_message(AuthError.error, "authentification fails")
+        "message": AuthError.error
     }), 401

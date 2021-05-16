@@ -21,3 +21,8 @@ frontend/package-lock.json
 *package.json
 *.json
 .env
+
+backend/env/ 
+backend/src/__pycache__/
+backend/src/auth/__pycache__/
+backend/src/database/__pycache__/
