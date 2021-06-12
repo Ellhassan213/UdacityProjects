@@ -45,6 +45,73 @@ def create_app(test_config=None):
             print(f'Error: {str(e)}')
             abort(422)
 
+    @app.route('/movies', methods=['POST'])
+    def post_movie():
+        try:
+            # Get new movie data, create and insert new movie in database
+            # Format and return as json object
+            data = request.get_json()
+            if not ('title' in data and 'release_date' in data):
+                abort(400)
+            title = data["title"]
+            release_date = data["release_date"]
+            movie = Movie(
+                title=title,
+                release_date=release_date
+            )
+            movie.insert()
+            movies = Movie.query.all()
+            formatted_movies = [movie.format() for movie in movies]
+
+            return jsonify({
+                "success": True,
+                "created": movie.id,
+                "movies": formatted_movies
+            })
+        except ValueError as e:
+            print(f'Error: {str(e)}')
+            abort(422)
+
+    @app.route('/movies/<id>', methods=['PATCH'])
+    def patch_movie(id):
+      try:
+        # Get updated movie data, create and update changes in database
+        # Format and return as json object
+        movie = Movie.query.get_or_404(id)
+        data = request.get_json()
+
+        movie.title = data["title"]
+        movie.release_date = data["release_date"]
+
+        movie.update()
+
+        movies = Movie.query.all()
+        formatted_movies = [movie.format() for movie in movies]
+
+        return jsonify({
+            "success": True,
+            "patched_movie": id,
+            "movies": formatted_movies
+        })
+      except ValueError as e:
+          print(f'Error: {str(e)}')
+          abort(422)
+
+    @app.route('/movies/<id>', methods=['DELETE'])
+    def delete_movie(id):
+        try:
+            # Get movie using incoming id, delete item from database
+            movie = Movie.query.get_or_404(id)
+            movie.delete()
+
+            return jsonify({
+                "success": True,
+                "deleted_movie": id
+            })
+        except ValueError as e:
+            print(f'Error: {str(e)}')
+            abort(422)
+
 #----------------------------------------------------------------------------#
 # Actor
 #----------------------------------------------------------------------------#
@@ -66,6 +133,76 @@ def create_app(test_config=None):
             print(f'Error: {str(e)}')
             abort(422)
 
+    @app.route('/actors', methods=['POST'])
+    def post_actor():
+        try:
+            # Get new actor data, create and insert new actor in database
+            # Format and return as json object
+            data = request.get_json()
+            if not ('name' in data and 'age' in data and 'gender' in data):
+                abort(400)
+            name = data["name"]
+            age = data["age"]
+            gender = data["gender"]
+            actor = Actor(
+                name=name,
+                age=age,
+                gender=gender
+            )
+            actor.insert()
+            actors = Actor.query.all()
+            formatted_actors = [actor.format() for actor in actors]
+
+            return jsonify({
+                "success": True,
+                "created": actor.id,
+                "actors": formatted_actors
+            })
+        except ValueError as e:
+            print(f'Error: {str(e)}')
+            abort(422)
+
+    @app.route('/actors/<id>', methods=['PATCH'])
+    def patch_actor(id):
+      try:
+        # Get updated actor data, create and update changes in database
+        # Format and return as json object
+        actor = Actor.query.get_or_404(id)
+        data = request.get_json()
+
+        actor.name = data["name"]
+        actor.age = data["age"]
+        actor.gender = data["gender"]
+
+        actor.update()
+
+        actors = Actor.query.all()
+        formatted_actors = [actor.format() for actor in actors]
+
+        return jsonify({
+            "success": True,
+            "patched_actor": id,
+            "actors": formatted_actors
+        })
+      except ValueError as e:
+          print(f'Error: {str(e)}')
+          abort(422)
+
+    @app.route('/actors/<id>', methods=['DELETE'])
+    def delete_actor(id):
+        try:
+            # Get actor using incoming id, delete item from database
+            actor = Actor.query.get_or_404(id)
+            actor.delete()
+
+            return jsonify({
+                "success": True,
+                "deleted_actor": id
+            })
+        except ValueError as e:
+            print(f'Error: {str(e)}')
+            abort(422)
+
 #----------------------------------------------------------------------------#
 # Error Handling
 #----------------------------------------------------------------------------#
@@ -79,12 +216,20 @@ def create_app(test_config=None):
         }), 422
 
     @app.errorhandler(404)
-    def unprocessable(error):
+    def not_found(error):
         return jsonify({
             "success": False,
             "error": 404,
             "message": "resource not found"
         }), 404
+
+    @app.errorhandler(400)
+    def bad_request(error):
+        return jsonify({
+            "success": False,
+            "error": 400,
+            "message": "bad request"
+        }), 400
 
     @app.errorhandler(AuthError)
     def auth_error(AuthError):
