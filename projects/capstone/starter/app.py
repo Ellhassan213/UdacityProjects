@@ -11,7 +11,7 @@ def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
     setup_db(app)
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    CORS(app)
 
     '''
     Using the after_request decorator to set Access-Control-Allow
@@ -30,7 +30,8 @@ def create_app(test_config=None):
 #----------------------------------------------------------------------------#
 
     @app.route('/movies', methods=['GET'])
-    def get_movies():
+    @requires_auth('get:movies')
+    def get_movies(token):
         try:
             # Get all movies, format into short form and return as json object
             movies = Movie.query.all()
@@ -47,7 +48,8 @@ def create_app(test_config=None):
             abort(422)
 
     @app.route('/movies', methods=['POST'])
-    def post_movie():
+    @requires_auth('post:movie')
+    def post_movie(token):
         try:
             # Get new movie data, create and insert new movie in database
             # Format and return as json object
@@ -74,7 +76,8 @@ def create_app(test_config=None):
             abort(422)
 
     @app.route('/movies/<id>', methods=['PATCH'])
-    def patch_movie(id):
+    @requires_auth('patch:movie')
+    def patch_movie(token, id):
         try:
             # Get updated movie data, create and update changes in database
             # Format and return as json object
@@ -99,7 +102,8 @@ def create_app(test_config=None):
             abort(422)
 
     @app.route('/movies/<id>', methods=['DELETE'])
-    def delete_movie(id):
+    @requires_auth('delete:movie')
+    def delete_movie(token, id):
         try:
             # Get movie using incoming id, delete item from database
             movie = Movie.query.get_or_404(id)
@@ -118,7 +122,8 @@ def create_app(test_config=None):
 #----------------------------------------------------------------------------#
 
     @app.route('/actors', methods=['GET'])
-    def get_actors():
+    @requires_auth('get:actors')
+    def get_actors(token):
         try:
             # Get all actors, format into short form and return as json object
             actors = Actor.query.all()
@@ -128,14 +133,15 @@ def create_app(test_config=None):
 
             return jsonify({
                 "success": True,
-                "movies": formatted_actors
+                "actors": formatted_actors
             })
         except ValueError as e:
             print(f'Error: {str(e)}')
             abort(422)
 
     @app.route('/actors', methods=['POST'])
-    def post_actor():
+    @requires_auth('post:actor')
+    def post_actor(token):
         try:
             # Get new actor data, create and insert new actor in database
             # Format and return as json object
@@ -164,7 +170,8 @@ def create_app(test_config=None):
             abort(422)
 
     @app.route('/actors/<id>', methods=['PATCH'])
-    def patch_actor(id):
+    @requires_auth('patch:actor')
+    def patch_actor(token, id):
         try:
             # Get updated actor data, create and update changes in database
             # Format and return as json object
@@ -190,7 +197,8 @@ def create_app(test_config=None):
             abort(422)
 
     @app.route('/actors/<id>', methods=['DELETE'])
-    def delete_actor(id):
+    @requires_auth('delete:actor')
+    def delete_actor(token, id):
         try:
             # Get actor using incoming id, delete item from database
             actor = Actor.query.get_or_404(id)
