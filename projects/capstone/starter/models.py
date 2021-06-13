@@ -9,7 +9,7 @@ from flask_migrate import Migrate
 # App Config.
 #----------------------------------------------------------------------------#
 
-load_dotenv()
+# load_dotenv()
 
 database_path = "postgresql+psycopg2://{}/{}".format(
     os.environ.get("DB_HOST"), os.environ.get("DB_NAME"))

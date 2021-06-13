@@ -3,7 +3,8 @@ from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from models import setup_db, Movie, Actor
-from auth import AuthError, requires_auth
+from auth import (AuthError, requires_auth, AUTH0_DOMAIN,
+                  ALGORITHMS, API_AUDIENCE, CLIENT_ID, CALLBACK_URL)
 
 
 def create_app(test_config=None):
@@ -74,28 +75,28 @@ def create_app(test_config=None):
 
     @app.route('/movies/<id>', methods=['PATCH'])
     def patch_movie(id):
-      try:
-        # Get updated movie data, create and update changes in database
-        # Format and return as json object
-        movie = Movie.query.get_or_404(id)
-        data = request.get_json()
+        try:
+            # Get updated movie data, create and update changes in database
+            # Format and return as json object
+            movie = Movie.query.get_or_404(id)
+            data = request.get_json()
 
-        movie.title = data["title"]
-        movie.release_date = data["release_date"]
+            movie.title = data["title"]
+            movie.release_date = data["release_date"]
 
-        movie.update()
+            movie.update()
 
-        movies = Movie.query.all()
-        formatted_movies = [movie.format() for movie in movies]
+            movies = Movie.query.all()
+            formatted_movies = [movie.format() for movie in movies]
 
-        return jsonify({
-            "success": True,
-            "patched_movie": id,
-            "movies": formatted_movies
-        })
-      except ValueError as e:
-          print(f'Error: {str(e)}')
-          abort(422)
+            return jsonify({
+                "success": True,
+                "patched_movie": id,
+                "movies": formatted_movies
+            })
+        except ValueError as e:
+            print(f'Error: {str(e)}')
+            abort(422)
 
     @app.route('/movies/<id>', methods=['DELETE'])
     def delete_movie(id):
@@ -164,29 +165,29 @@ def create_app(test_config=None):
 
     @app.route('/actors/<id>', methods=['PATCH'])
     def patch_actor(id):
-      try:
-        # Get updated actor data, create and update changes in database
-        # Format and return as json object
-        actor = Actor.query.get_or_404(id)
-        data = request.get_json()
+        try:
+            # Get updated actor data, create and update changes in database
+            # Format and return as json object
+            actor = Actor.query.get_or_404(id)
+            data = request.get_json()
 
-        actor.name = data["name"]
-        actor.age = data["age"]
-        actor.gender = data["gender"]
+            actor.name = data["name"]
+            actor.age = data["age"]
+            actor.gender = data["gender"]
 
-        actor.update()
+            actor.update()
 
-        actors = Actor.query.all()
-        formatted_actors = [actor.format() for actor in actors]
+            actors = Actor.query.all()
+            formatted_actors = [actor.format() for actor in actors]
 
-        return jsonify({
-            "success": True,
-            "patched_actor": id,
-            "actors": formatted_actors
-        })
-      except ValueError as e:
-          print(f'Error: {str(e)}')
-          abort(422)
+            return jsonify({
+                "success": True,
+                "patched_actor": id,
+                "actors": formatted_actors
+            })
+        except ValueError as e:
+            print(f'Error: {str(e)}')
+            abort(422)
 
     @app.route('/actors/<id>', methods=['DELETE'])
     def delete_actor(id):
@@ -202,6 +203,23 @@ def create_app(test_config=None):
         except ValueError as e:
             print(f'Error: {str(e)}')
             abort(422)
+
+
+#----------------------------------------------------------------------------#
+# Helper functions
+#----------------------------------------------------------------------------#
+
+    @app.route("/auth/URL", methods=["GET"])
+    def generate_auth_URL():
+        URL = f'https://{AUTH0_DOMAIN}/authorize' \
+            f'?audience={API_AUDIENCE}' \
+            f'&response_type=token&client_id=' \
+            f'{CLIENT_ID}&redirect_uri=' \
+            f'{CALLBACK_URL}'
+        return jsonify({
+            'URL': URL
+        })
+
 
 #----------------------------------------------------------------------------#
 # Error Handling
@@ -245,4 +263,4 @@ def create_app(test_config=None):
 app = create_app()
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    app.run(host='127.0.0.1', port=5000, debug=True)

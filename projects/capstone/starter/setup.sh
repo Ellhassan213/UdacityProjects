@@ -1,1 +1,9 @@
-
+export DB_HOST=127.0.0.1:5432 
+export DB_USER=lawalhassan 
+export DB_NAME=casting_agency_db
+export DB_NAME_TEST=casting_agency_db_test
+export AUTH0_DOMAIN='fsnd-lawal.eu.auth0.com'
+export ALGORITHMS=['RS256']
+export API_AUDIENCE='http://127.0.0.1:5000'
+export CLIENT_ID='5cdzD0okSXihs1KsQMuwRd49sBcjwvqP'
+export CALLBACK_URL='http://127.0.0.1:8100'
