@@ -10,8 +10,10 @@ from flask_migrate import Migrate
 #----------------------------------------------------------------------------#
 
 
-database_path = "postgresql+psycopg2://{}/{}".format(
-    os.environ.get("DB_HOST"), os.environ.get("DB_NAME"))
+# database_path = "postgresql+psycopg2://{}/{}".format(
+#     os.environ.get("DB_HOST"), os.environ.get("DB_NAME"))
+
+database_path = os.environ.get("DATABASE_URL")
 
 db = SQLAlchemy()
 
