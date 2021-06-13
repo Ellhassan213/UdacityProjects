@@ -1,0 +1,190 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 13.2
+-- Dumped by pg_dump version 13.2
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: actor; Type: TABLE; Schema: public; Owner: lawalhassan
+--
+
+CREATE TABLE public.actor (
+    id integer NOT NULL,
+    name character varying,
+    age integer,
+    gender character varying
+);
+
+
+ALTER TABLE public.actor OWNER TO lawalhassan;
+
+--
+-- Name: actor_id_seq; Type: SEQUENCE; Schema: public; Owner: lawalhassan
+--
+
+CREATE SEQUENCE public.actor_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.actor_id_seq OWNER TO lawalhassan;
+
+--
+-- Name: actor_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: lawalhassan
+--
+
+ALTER SEQUENCE public.actor_id_seq OWNED BY public.actor.id;
+
+
+--
+-- Name: alembic_version; Type: TABLE; Schema: public; Owner: lawalhassan
+--
+
+CREATE TABLE public.alembic_version (
+    version_num character varying(32) NOT NULL
+);
+
+
+ALTER TABLE public.alembic_version OWNER TO lawalhassan;
+
+--
+-- Name: movie; Type: TABLE; Schema: public; Owner: lawalhassan
+--
+
+CREATE TABLE public.movie (
+    id integer NOT NULL,
+    title character varying,
+    release_date timestamp without time zone
+);
+
+
+ALTER TABLE public.movie OWNER TO lawalhassan;
+
+--
+-- Name: movie_id_seq; Type: SEQUENCE; Schema: public; Owner: lawalhassan
+--
+
+CREATE SEQUENCE public.movie_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.movie_id_seq OWNER TO lawalhassan;
+
+--
+-- Name: movie_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: lawalhassan
+--
+
+ALTER SEQUENCE public.movie_id_seq OWNED BY public.movie.id;
+
+
+--
+-- Name: actor id; Type: DEFAULT; Schema: public; Owner: lawalhassan
+--
+
+ALTER TABLE ONLY public.actor ALTER COLUMN id SET DEFAULT nextval('public.actor_id_seq'::regclass);
+
+
+--
+-- Name: movie id; Type: DEFAULT; Schema: public; Owner: lawalhassan
+--
+
+ALTER TABLE ONLY public.movie ALTER COLUMN id SET DEFAULT nextval('public.movie_id_seq'::regclass);
+
+
+--
+-- Data for Name: actor; Type: TABLE DATA; Schema: public; Owner: lawalhassan
+--
+
+COPY public.actor (id, name, age, gender) FROM stdin;
+1	Tommy Egan	30	Male
+2	Tasha	25	Female
+\.
+
+
+--
+-- Data for Name: alembic_version; Type: TABLE DATA; Schema: public; Owner: lawalhassan
+--
+
+COPY public.alembic_version (version_num) FROM stdin;
+0b67abd50b3c
+\.
+
+
+--
+-- Data for Name: movie; Type: TABLE DATA; Schema: public; Owner: lawalhassan
+--
+
+COPY public.movie (id, title, release_date) FROM stdin;
+1	Avengers	2021-06-12 00:00:00
+2	Big Bang	2020-06-12 00:00:00
+3	BOOM	2021-10-25 00:00:00
+\.
+
+
+--
+-- Name: actor_id_seq; Type: SEQUENCE SET; Schema: public; Owner: lawalhassan
+--
+
+SELECT pg_catalog.setval('public.actor_id_seq', 3, true);
+
+
+--
+-- Name: movie_id_seq; Type: SEQUENCE SET; Schema: public; Owner: lawalhassan
+--
+
+SELECT pg_catalog.setval('public.movie_id_seq', 4, true);
+
+
+--
+-- Name: actor actor_pkey; Type: CONSTRAINT; Schema: public; Owner: lawalhassan
+--
+
+ALTER TABLE ONLY public.actor
+    ADD CONSTRAINT actor_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: alembic_version alembic_version_pkc; Type: CONSTRAINT; Schema: public; Owner: lawalhassan
+--
+
+ALTER TABLE ONLY public.alembic_version
+    ADD CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num);
+
+
+--
+-- Name: movie movie_pkey; Type: CONSTRAINT; Schema: public; Owner: lawalhassan
+--
+
+ALTER TABLE ONLY public.movie
+    ADD CONSTRAINT movie_pkey PRIMARY KEY (id);
+
+
+--
+-- PostgreSQL database dump complete
+--
+

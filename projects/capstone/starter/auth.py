@@ -12,6 +12,9 @@ ALGORITHMS = os.environ.get("ALGORITHMS")
 API_AUDIENCE = os.environ.get("API_AUDIENCE")
 CLIENT_ID = os.environ.get("CLIENT_ID")
 CALLBACK_URL = os.environ.get("CALLBACK_URL")
+ASSISTANT_TOKEN = os.environ.get("ASSISTANT_TOKEN")
+DIRECTOR_TOKEN = os.environ.get("DIRECTOR_TOKEN")
+PRODUCER_TOKEN = os.environ.get("PRODUCER_TOKEN")
 
 # AuthError Exception
 '''
